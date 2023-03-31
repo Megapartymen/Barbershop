@@ -130,9 +130,9 @@ Material:
     - _DetailNormalMapScale: 1
     - _Direction: 0
     - _DstBlend: 0
-    - _DynamicsGroup: 0
+    - _DynamicsGroup: 1
     - _EmissionMapStrength: 1
-    - _EnableWind: 0
+    - _EnableWind: 1
     - _ExtraLighting: 0
     - _ExtraLightingEnable: 1
     - _ExtraLightingGroup: 0
@@ -254,7 +254,7 @@ Material:
     - _InitialDensity: 0.5
     - _LightPenetrationDepth: 0.1
     - _LightWraparound: 1
-    - _LightingGroup: 0
+    - _LightingGroup: 1
     - _MainMapsGroup: 1
     - _MarkingsContrast: 1
     - _MarkingsDensity: 3.85
@@ -352,7 +352,7 @@ Material:
     - _VelocityZ: 0
     - _WindAngle: -10
     - _WindDirection: 90
-    - _WindGroup: 0
+    - _WindGroup: 1
     - _WindGustsStrength: 2.5
     - _WindSpeed: 0.35
     - _WindTurbulenceStrength: 1.7
