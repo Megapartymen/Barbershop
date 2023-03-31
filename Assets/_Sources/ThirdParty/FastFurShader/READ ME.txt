@@ -1,0 +1,624 @@
+Warren's Fast Fur Shader - V4.0.0
+
+
+Latest Version:  https://warrenwolfy.gumroad.com/l/atntv
+
+Discord Server:  https://discord.gg/3nXnvU8cSs
+
+YouTube Guides:  https://www.youtube.com/playlist?list=PL8Q88ddwwfxr2K5D1MJnAc5Kx1fujQ7hY
+
+
+
+Preamble
+
+	This shader is a passion project. I had no knowledge of either Unity or shader code when I started making it, so please contact me on the Discord server if (when) you encounter any bugs.
+	
+	I will work with you to fix the bugs! My goal is to let everyone have fur that looks great and doesn't crash frame-rates.
+
+
+
+Installation
+
+	Installing the Unity package will create a "FastFurShader" folder in your project's "Assets" folder. There are no other dependencies.
+
+	Once installed, the shader will be listed as "Warren's Fast Fur" -> "Fast Fur" when choosing a shader.
+
+	(NOTE: There may still be a rare bug that sometimes causes a compiler error. If the shader isn't listed, go to the "Project" -> "Assets" folder, then right-click on the "FastFurShader" folder and select "Reimport". If this happens, please let me know, as I really want to know if this bug is 100% fixed or not.)
+
+
+
+Set-up
+
+	Put your avatar's main colour map into the "Albedo Map" texture slot.
+
+	Fast Fur needs at least 2 custom data textures in order to work. The utilities required to make them are included with the shader:
+
+
+	"Fur Shape Map"
+
+		Contains fur height, combing, and hair density information.
+
+		Click the big "Click here to generate a blank fur shape data map" button, and a blank map will be created for your avatar (the file will be created in the "FastFurShader" directory, but can be moved anywhere).
+
+		Your new fur coat will have an even height of 70% all over, no combing, and uniform hair density.
+
+		You can edit this later using the "Fur Grooming" utility.
+
+
+	"Hair Pattern Map (Fine)"
+
+		Contains a randomly generated pattern of individual hair follicles. The "Hair Pattern Map (Coarse)" map is optional, but highly recommended since it makes the hairs more visible further away.
+
+		Click the big "Click here to generate a hair map" button to create the maps (the files will be created in the "FastFurShader" directory, but can be moved anywhere).
+
+
+
+	Once the default textures have been created, I recommend playing with the various sliders to get a sense of what they do. Most should be self-explanatory just by adjusting the slider and seeing what happens, but to clarify some:
+
+	"PBS Skin Material" - Renders the skin using 'Physically Based Shading', which allows for advanced lighting effects such as specular lighting and glossy or metallic surfaces. The depth of the fur and the position of the slider determines how visible the PBS skin effects are.
+
+	"MatCap" - Material Capture is a way of simulating world reflections and other lighting effects. To be honest, I have very little experience with MatCap, and my implementation is based on what I was able to research online. If you are familiar with MatCap and find that my implementation is missing some critical feature you need, or is glitchy, please contact me on the Discord server and I will work to fix it right away!
+
+	"Combing Strength" - This won't do anything until you've groomed your fur. Once you've groomed it, this will set the overall strength of the combing.
+
+	"Body Shrink Offset" - The base body will be moved inwards, proportional to thickness of the fur. This allows a fur-covered avatar to have a similar sillouette compared to when it is using another shader.
+
+	"Body Expansion when Far" - The base body will expand as the distance increases. This improves render quality, since lower fur layers will also be moved outwards. However, this expansion can cause gaps on some avatars, so this feature is optional.
+
+	"Height Masks" - These 2 textures contain up to 8 additional height masks. Each channel can be independantly enabled as-needed to limit the height of the fur (for example, to hide fur that is beneath clothing).
+
+	"Fur Grooming: Copy Map" - Only used during Fur Grooming. This can be used as a source to copy from, or as a way to lock the skin/fur while using the Fur Grooming.
+	
+	"Hair Highlights" / "Hair Colour Shift" - These use the per-hair data stored in the "Hair Pattern Map" to determine the colouring offsets of each individual hair. Besides looking nice, this feature is what makes hairs visible, otherwise they simply all blend together.
+
+	"Hair Clipping" - The shader automatically calibrates itself so that the tips of the tallest hairs extend to the highest rendered shell. However, you may use "Hair Clipping" to lengthen your hairs even further. Everything that extends beyond the top rendering shell will then be clipped off.
+
+	"Hair Pattern Map Generator" - This generates random hair maps, allowing you to fine-tune the density, length variability, colouring, highlights, etc..., of individual hairs.
+
+	"Hair Stiffness" controls how flexible or stiff the hairs are: flexible hairs bend along their entire length, while stiff hairs bend at their root.
+
+	"Fur Markings" (Optional) Contains a tiled fur texture (ie. spots, stripes, etc...) You can use an actual image of animal fur, or the shader can generate a random fur pattern for you.	NOTE: even if you do not want visible markings, the "Fur Markings Height" slider can be used to give your fur a textured appearance, which increases the fur's visibility.
+
+	"Fur Markings Generator" - This generator is based on Alan Turing's "The Chemical Basis of Morphogenesis" algorithm. The basic theory is that each pigmented cell gives off activator hormones and inhibitor hormones. Activator hormones affect nearby cells, while inhibitor hormones affect cells further away. If the strength of all activator hormones acting on a cell is stronger than all the inhibitor hormones, that cell will become pigmented, otherwise it will be un-pigmented. Note that this generator is currently a simplification of Turing's model, and is not capable of producing many complex fur patterns (ex. leopard spots).
+
+	"Light Wraparound" - When an "Important" light (as determined by the world's creator) hits the fur at a sharp angle, this will cause the tips of the fur to catch the light. For the Lite version of the Fast Fur shader, only 1 "Directional" light is supported. This does not work for any background, or "Not Important" lights.
+
+	"Subsurface Scattering" - When an "Important" light is behind the avatar, this causes edge fur to glow as some of the light to passes through the fur. Note that the amount of glow is an approximation, and isn't physically accurate (which would require much more complex, and thus much slower calculations).
+
+	"Deep Hair Occlusion Strength" - How much darker hair / skin gets the deeper into the fur it is. Note that the shader gradually fades this in as you get closer. It is not visible when far away.
+
+	"Light Penetration Depth" - Reduces the effect of "Deep Hair Occlusion Strength" by having light ignore some of the depth. Very useful to eliminate subtle shadowing for avatars with peach-fuzz facial fur.
+
+
+
+Toon Shading
+
+	This is an optional feature which applies a type of simulated 2D cell-shading. When enabled, the shader will limit itself to using only 9 possible colours. The colours are adjustable, and the shader will choose whichever colour is closest.
+	
+	Some post-processing effects can then be applied: "Re-mix Hue" will shift the RGB channels to other channels. "Toon Brightness Adjust" will make everything brighter or darker. "Toon Whitening" mixes in some white pigment.
+
+	"Toon lighting" will reduce the lighting down to 3 intensity levels. The thresholds between the 3 levels are adjustable, and the sharpness of the transitions are adjustable.
+
+
+
+Fur Grooming
+
+	In the "FastFurShader" folder is a prefab labelled "Fur Grooming (Drag this into your scene Heirarchy)". Drag it into your project heirarchy, wherever you like.
+
+	Press "Play" (or type CTRL-P).
+
+	Hopefully, you will see your avatar (the Fur Grooming utility uses your main camera, so that needs to have been set up facing your avatar), along with the grooming control panel. If you see an error message instead, you will need to correct the error condition first. If you cannot figure out what the error message means, contact me on the Discord server and I will try to help.
+
+	Controlling the camera can be done by holding the right-mouse button. While holding the right-mouse button, WASD can be used to move left-right and forward-back, and QE can be used to move up-down. The speed of the camera movement can be adjusted using the mouse scroll-wheel.
+
+	To choose which "Fast Fur" material you'd like to groom, use the drop-down menu on the right side of the game display. This menu will be disabled if you have un-saved changes on the material you are currently grooming.
+	
+	You should be able to hover over the material that you have selected and see a glowing cursor appear on the Fast Fur material. If not, try clicking on your avatar. If there is still no cursor, please contact me on the Discord server and I will try to help.
+
+ 
+	The sliders on the left of the control panel adjust the size, strength, falloff (strong in centre, weaker on the edges), and visibility of the grooming cursor.
+
+	The sliders, buttons, and check-boxes on the right of the control panel are used to set the various grooming options. The check-boxes enable/disable each type of grooming, and the sliders set the amount.
+
+	Clicking the middle-mouse-button will sample the length, density, and combing of the fur at the point under your mouse cursor, and set the sliders accordingly.
+
+	"Spherical" changes between a 3D spherical cursor, or a 2D circular cursor. A 3D spherical cursor is usually best for large-scale grooming, while the 2D circular cursor is often easier for grooming finer details. Note that the 2D circular cursor considers geometric "hard-edges" as separate surfaces. This is NOT intentional, but I honestly do not know how to fix this yet.
+
+	"Length" is the relative length of the hairs. Note that the shader squeezes rendering shells closer together when fur is shorter. THIS IS ONLY CALCULATED PER VERTEX, meaning sometimes nearby fur will seem to shrink or disappear when you are trying to add fine details. If so, you need to raise the height of nearby fur, where the vertices are.
+
+	"Density" can be used to make patches of hairs finer or coarser. Note that it only does so in discrete steps, and that every change of density will create a slight seam in the hair pattern.
+
+	"Combing" combs the fur in the direction the 3D cursor moves. The strength of the combing determines the maximum that the hair will bend in a given direction.
+
+
+	If you assign a "Fur Grooming: Copy Map" to the material you are grooming, you can then use that other map to lock either the skin or the fur, or you can copy from it using the "Copy Map" brush.
+
+	
+	Note that due to the mathematics and texture resolutions involved, you will never be able to get the combing perfect. Longer hairs are affected more by these resolution errors, and no matter how hard you try they will always go "wonky" if combed too far.
+
+	Sometimes heavy combing that crosses a "hard-edge" in the avatar's geometry will result in a line of black, or wrong-coloured hairs. The glitch happens because combing shifts where samples are taken from your avatar's albedo texture. If a pixel sample is moved too far, it may take a sample from somewhere that is blank, resulting in black fur. Adding more "padding" pixels to your albedo texture (generated by Blender, Substance Painter, etc...) will reduce these "hard-edge" glitches, but if that doesn't help you can turn on the "Aggressively Hide Seams" feature, found in the "Main Render Settings" section. This will prevent the albedo texture from being shifted, eliminating the seams, but also causing the individual hair colours to be inconsistent.
+
+
+
+
+Shader Variants
+
+	"Fast Fur" (standard version)
+		- Max 32 fur rendering shells
+		- Supports all lights
+		- Full shadows
+
+
+	"Fast Fur - Lite"
+		- Max 16 fur rendering shells
+		- Only 1 "Important" light supported (which must be "Directional", not "Spot" or "Point"), all other lighting will be approximated.
+		- Casts shadows, but does not receive them
+		- Faster than the standard Fast Fur shader
+		- Free!
+
+
+
+
+Helper Shaders
+
+	"Render Nothing"
+		- Aborts the render pipeline as quickly as possible.
+		- Useful to hide materials, such as clothes, but is faster than a shader that is using transparency.
+
+	"Scaling"
+		- A standard Unity surface shader that can re-scale the mesh.
+		- Useful for short-haired avatars, to make clothing a little bit bigger so that it covers the fur. Unfortunately, it doesn't work with some clothing due to geometric hard-edges.
+
+
+
+Final Notes
+
+	Be aware that this shader has been ruthlessly built for speed. I've made countless compromises on accuracy and/or realism for the sake of FPS. Some glitches and limitations are directly because of these speed optimizations. Others are my fault (sorry).
+
+	There are still some bugs and missing features with this shader, and I am continually improving it. Shader programming has been a steep (but fun!) learning curve for me, and I'm proud of the results so far. I really hope you enjoy my shader!
+
+
+
+
+
+
+Version History
+
+
+V4.0.0 - 2023.03.13
+-------------------
+New Features:
+   - 'Length Masks'
+   - Now supports .dds textures
+   - Standard version Quality Settings can choose between 16, 24, or 32 maximum fur layers
+   - Two-sided skin layer rendering
+   - 'Aggressively Hide Seams' sacrifices per-hair colour accuracy to hide seams caused by insufficient albedo overpainting
+   - 'Soften Shadows' reduces harsh shadows for worlds that don't have enough ambient light
+   - 'Body Shrink/Resize Cutoff' prevents the body from being resized if the fur is shorter than the cutoff
+   - 'Fur Shape Data Map Utilities' has more copying and masking options
+   - Anisotropic lighting can now have emission
+   - Anisotropic lighting can now have a colour tint
+   - Anisotropic lighting reflections can now a simplified type of iridescence
+   - Anisotropic lighting can now also be applied to the skin
+   - 'Coarse' Hair Pattern Map and 'Hair Tip Enhancement'. Both make the tips of hairs more visible further away.
+   - Adjustable hair map filtering
+   - (Experimental) 'Advanced Hair Colouring' supports various ways of having hairs change colour along their length
+
+
+Bug fixes:
+   - The 'FastFurShader' folder can now be moved. It doesn't need to be in the root 'Assets' folder anymore.
+   - Eliminated most pixel "fireflies"
+   - Render quality is now consistent with groomed fur height (ex. 0.5 height fur groomed to 50% length will now have the same detail as 0.25 height fur groomed to 100% length)
+   - Dynamic Quality Settings often did not work correctly (when taking a photo, screenshot, etc...)
+   - Fur quality should be more consistent when scaled
+   - The maximum view distance wasn't accurate
+   - Sometimes more layers were being rendered than needed
+   - Fur layers weren't smoothly appearing at long ranges
+   - Fur layers were shrinking a bit too much at long view ranges
+   - Fur Grooming: Fixed non-skinned mesh renderer support
+   - Fur Grooming: 'Show Data' wasn't working if the material's properties were not showing in the inspector.
+   - Fur Grooming: Fixed the ability to edit shared materials.
+   - Fur Grooming: Fixed thin seams appearing on the skin
+   - Fur Grooming: Textures were sometimes getting mixed up
+   - Shadows weren't accurate, which was causing glitches
+   - Negative Fur Markings Height Offset now works correctly
+   - Fixed a glitch that made subsurface scattering look patchy when far away
+   - Anisotropic angle was x10 too high. This mostly affected Refractions, making them 60 degrees instead of 6, which made their appearance very weak.
+   - 'Fur Shape Data Map Utilities' copy command was sometimes stuck inverting
+   - Fixed various bugs and glitches with the shader GUI
+
+
+Changes:
+   - Adjusted the min/max render range and the render detail
+   - Hairs are now MUCH more visible when further away.
+   - Shadows have been completely re-worked. They now use a variant of the Unity Standard Shader's shadow caster.
+   - Default shadow thickness is now 0.4 instead of 0.25
+   - Quality Settings have been completly re-worked
+   - Default for standard version is now 24 layers (max is still 32)
+   - Default VR Quality is now 'Very Fast 125'
+   - 'Override Quality Bias' now matches the scale of the quality options. For example:, 'Very Fast 110' plus a bias of 20 results in a quality of 130
+   - Maximum view distance is now proportional to fur height (with a max cap of ~10 in-game meters)
+   - Pipeline options have been renamed
+   - The maximum number of layers when using the Beta "Super Pipeline" is now based on the Quality Settings
+   - Fur Grooming: Creates its own camera when starting up
+   - Fur Grooming: Better error handling if the material is being used more than once
+   - Fur Grooming: Better error handling for everything
+   - Fur Grooming: Added a lot of sanity checks
+   - Fur Grooming: Renamed the 'Fur Grooming Mask' to 'Fur Grooming: Copy Map'
+   - Edge triangles rotate slightly towards/away from the camera in order to lower the mip map level and increase hair detail
+   - 'Toon Shading' disables 'Hair Tinting' and 'Hair Highlights'
+   - 'Anisotropic Fur Gloss' is affected by 'Toon Shading'
+   - Tweaks to Anisotropic lighting formulas
+   - Subsurface scattering now works with all lights, not just "important" ones
+
+
+
+
+
+V3.3.1 - 2022.12.12
+-------------------
+Bug fixes:
+	- Fur Grooming: Non-Spherical brush now works correctly with MirrorX
+
+
+
+
+
+V3.3.0 - 2022.12.11
+-------------------
+Bug fixes:
+	- Now works on OpenGL 4.1 (ie. now works on MacOS)
+	- Better filtering to eliminate stray pixels that sometimes float above the fur
+	- Some lighting effects were causing the fur to become transparent
+	- Fur Grooming: Avatars with UV coordinates outside of 0-1 are now supported
+	- Fur Grooming: Combing direction wasn't being mirrored
+	- Fur Grooming: Sometimes the "Undo" would revert to the wrong copy
+	- Fur Grooming: Fixed some UI scaling issues
+	- Fixed some incorrect ambient occlusion artifacts (others still remain)
+	- Fixed lighting inconsistencies at different ranges
+	- Fixed gaps appearing between fur layers at medium ranges
+	- Fixed unintentional hair clipping at medium ranges
+
+New Features:
+	- Hair Pattern Map: The shape of the individual hairs is now adjustable (previously, all hairs were "Slightly Tapered")
+	- Camera Proximity Touch - the fur moves out of the way when the camera is close
+	- Camera Proximity Occlusion - reduces light strength when the camera is close
+	- Skin layer: Metallic Reflections
+	- Skin layer: Occlusion Map
+	- "Fallback Lighting" that will be used if a world doesn't have a "DIRECTIONAL" light
+	- Adjustable "Fur Shadow Size" allows fur to cast shadows. Note that this is an approximation, so it will cause some shadow artifacts.
+	- Selectable render Pipeline (V2 is currently the "live" release version)
+	- Fur Grooming: Show the raw length/density/combing data using false colour
+	- Texture Utilities: Apply Fur Masking, Copy/Remap Colour Channels, Rescale Length/Density/Combing, Change Resolution.
+
+Changes:
+	- The overall shape of the fur is more consistent at different ranges
+	- The fur casts shadows (previously, only the skin did)
+	- Fur Grooming: The UI scaling now has a maximum limit
+
+
+
+
+
+V3.2.0 - 2022.11.08
+-------------------
+Bug fixes:
+	- Some AMD GPU drivers are still crashing (6600xt and 6800xt this time), so the shader has again been reverted to the V2 pipeline
+	- Added filtering to reduce the appearance of stray pixels that sometimes float above the fur at certain angles
+
+Changes:
+	- Reduced max layers back to 32 (16 for Lite)
+
+
+
+
+V3.1.0 - 2022.11.06
+-------------------
+New Features:
+	- Maximum fur layers increased to 64 (32 for Lite)
+	- The Lite version now casts shadows (but still does not receive them)
+	- Dynamic quality settings (Unity editor, VR/desktop mode, Camera, Screenshots, etc...)
+	- "Extra Lighting" that adds rim or front lighting
+	- World lighting colour and/or strength adjustments
+	- Cutout rendering mode
+	- Anisotropic lighting depth
+	- Fur Grooming: material selector list
+	- Fur Grooming: various brush tools and modes
+	- Fur Grooming: can use another texture as a mask
+ 
+Bug fixes:
+	- Some world effects were causing the Lite version to become completely transparent
+	- Selectable UV0-UV3 was not working correctly
+	- Density changes were causing highly visible seams
+	- Fur length calibration is now far more reliable
+	- Using a "Mesh Renderer" no longer causes calibration or Fur Grooming errors
+	- Fixed some "failed to compile" errors
+
+Changes:
+	- Fur Calibration can now be manually adjusted
+	- View distance is now also controlled by the quality setting
+	- "Body Expansion when Far" has been completely re-worked to be much smoother
+	- "Min Brightness" feature has been replaced by "Extra Lighting" (which can do the same thing, plus more)
+	- Fur Grooming can now be placed into the root of the scene, you don't need to put in on your avatar
+	- Lots of various UI changes
+
+
+
+
+V2.4.0 - 2022.10.15
+-------------------
+New Features:
+	- Anisotropic light reflections.
+	- Curly fur.
+	- Emission that uses the Albedo Map.
+	- Adjustable minimum and maximum lighting brightness.
+	- Selectable UV0-UV3
+	- Fur Grooming sliders show their current value.
+
+Bug fixes:
+	- Fur Grooming combing did not work if combing angle was set to 0.
+	
+Changes:
+	- "Dynamic Body Size" is now called "Body Expansion when Far" and the strength is adjustable.
+	- "Hair Density" can now be set as low as 0.1
+	- Data files are now generated in the project root directory, rather than the FastFurShader folder.
+
+
+
+
+V2.3.0 - 2022.10.03 - VERSION # REVERT
+--------------------------------------
+Reversion:
+	- There are reports of the V3.0.x pipeline crashing AMD Vega 64 cards. The pipeline changes have been reverted.
+
+Bug fixes:
+	- Includes all bug fixes from V3.0.x
+	- Automatic calibration was broken (again).
+
+Changes:
+	- Includes all non-pipeline changes from V3.0.x
+	- Reverting to the earlier pipeline limits the Standard shader to 32 layers and the Lite shader to 16 layers.
+	- The shader supports manual calibration if automatic calibration fails.
+
+
+
+
+V3.0.1 - 2022.10.02
+-------------------
+Bug fixes:
+	- Skin was turning black/white. The MatCap was turning itself on if you had previously used Poiyomi's shader on the material.
+
+Changes:
+	- MatCap now must be actively turned on before it does anything.
+
+
+
+
+V3.0.0 - 2022.10.02
+-------------------
+New Features:
+	- The Max Fur Layers have been doubled for both the Standard and Lite shaders, and are now adjustable.
+	- MatCap for the skin layer.
+
+Bug fixes:
+	- The automatic calibration was sometimes getting stuck in an endless loop, causing the GUI to become erratic and unusable.
+	- Reverted Vertex lighting code to an earlier version to hopefully fix an intermittent compiler error.
+
+Changes:
+	- The render pipeline has been overhauled, removing a major memory and bandwidth bottleneck.
+	- Length calibration is no longer automatic. It now requires the user to click a calibration button.
+	- Hair Clipping has been re-calibrated. Previously, setting this to 0 still resulted in some Hair Clipping.
+	- Dynamic Body Size is now less puffy-looking.
+
+
+
+
+V2.2.0 - 2022.09.24
+-------------------
+New Features:
+	- "PBS Skin Material" (only affects the skin layer): Normal Map, Metallic Map, Smoothness, and Specular Highlights.
+	- "Fur Min Height Cutoff" treats any fur below the cutoff as zero height.
+
+Bug fixes:
+	- Fur Grooming will now use any camera (not just "Main Camera") and report an error if it cannot find one.
+	- Fixed some lighting errors.
+	- Shader properties can now be edited during Fur Grooming.
+	- Albedo and emission colours now work with VR Chat's shader fallback system.
+	- Reduced the likelihood of black lines appearing on seams during Fur Grooming.
+
+Changes:
+	- Changed "Main Maps" to "Main Render Settings", since it now includes more than just the albedo and emission maps.
+	- Dynamic Body Size has been tweaked to (hopefully) make the transition smoother and less noticeable.
+	- Emission system has been modified to work more like the Unity Standard shader.
+
+
+
+
+V2.1.2 - 2022.09.16
+-------------------
+Bug fixes:
+	- Fog is fixed.
+	- Shorter-haired avatars were having their fur culled too aggressively, resulting in the fur popping in and out at medium view ranges.
+
+
+
+
+V2.1.1 - 2022.09.15
+-------------------
+Bug fixes:
+	- Fog is turning the skin white in some worlds. Temporarily disabled the fog.
+
+
+
+
+V2.1.0 - 2022.09.11
+-------------------
+New Features:
+	- Toon shading.
+	- Wind gusts.
+
+Bug fixes:
+	- Wind could cause visible gaps to appear at geometric hard-edges.
+	- "Hair Highlights" did not work if there was no optional "Fur Markings" texture.
+	- The wind would sometimes stop working if you stayed in the same VR Chat room for longer than ~27 hours.
+
+Changes:
+	- Re-organized editor GUI.
+	- Dynamic Body Size (added in V2.0.Beta.1), is now optional, since it can cause visible gaps on some avatars.
+	- Layer spacing is a bit more spread out near the skin and a bit more compressed further away.
+	- "Hair highlights" now measures all channels, instead of only the red channel, when calculating the highlight intensity.
+
+
+
+
+V2.0.0.Beta.4 - 2022.08.28
+--------------------------
+New Features:
+	- "Hair Stiffness" controls how flexible or stiff the hairs are: flexible hairs bend along their entire length, while stiff hairs bend at their root.
+
+Bug fixes:
+	- Setting the "Fur Markings Height Offset" to exactly 0 resulted in half-height fur.
+	- The shader instancing has been re-built from scratch. This hopefully fixes a rare bug that sometimes caused the shader to fail to compile.
+
+Changes:
+	- Gravity and Wind moved to a "Gravity, Wind, and Movement" section, which will also have Movement settings in a future version.
+	- Hairs that are bent by Gravity or Wind now retain their length, rather than sometimes being stretched or compressed.
+
+Other:
+	- The distribution package now contains a couple of custom helper shaders that I made that have been useful on my own avatars.
+
+
+
+
+V2.0.0.Beta.3 - 2022.08.22
+--------------------------
+New Features:
+	- The "Debugging" section now has properties that can be used to manually override the scaling or the maximum view distance.
+
+Bug fixes:
+	- The fur thickness still wasn't scaling correctly, due to circular logic.
+	- The Fur Grooming now provides more error messages describing exactly why it has failed, rather than just not working.
+
+Changes:
+	- Fur scaling is now calibrated manually at edit time, rather than dynamically at run-time.
+	- Occlusion effect is now exponential instead of linear.
+
+
+
+
+V2.0.0.Beta.2 - 2022.08.17
+--------------------------
+New Features:
+	- Added "Body Shrink Offset", which shrinks your avatar's geometry proportionally to the fur depth. This is to allow your avatar to have a sillouette that is similar to when it is using a different shader.
+
+Bug fixes:
+	- The fur thickness wasn't scaling correctly for some avatars.
+
+Changes:
+	- The wind turbulence reacts to movement relative to the wind direction and speed, rather than any movement (still needs work).
+
+
+
+
+V2.0.0.Beta.1 - 2022.08.14
+--------------------------
+New Features:
+	- Render Quality Options: Fastest, Fast, Slow, Very Slow, Slowest. (V1.2.2 speed is about equal to "Fast". "Slowest" is about half the speed of "Fast".).
+	- Render Distance Options: Very Close, Close, Far, Very Far, Maximum Distance. (V1.2.2 distance is about equal to "Close". "Maximum Distance" is about double the distance of "Close".).
+	- Fur Grooming now has an optional 2D cursor (makes shaving mouth, whiskers, etc... much easier).
+	- Simulated sub-surface light scattering when the avatar is between the viewer and an "important" light source.
+
+Bug fixes:
+	- Fur Grooming doesn't break when saving.
+	- Fixed another, rarer shadow "sparkle" glitch.
+
+Changes:
+	- Internally, the codebase has been completely overhauled.
+	- Improved algorithm for determining how much detail to render. Overall render quality is higher (without being any slower).
+	- More speed optimizations.
+	- The thickness of the fur now scales with the avatar scale.
+	- The base skin layer is now thicker when far away. This is to maintain consistent avatar "fluffiness" even when the fur is not rendering.
+
+
+
+
+V1.2.2 - 2022.08.06
+-------------------
+Bug fixes:
+	- Fur Grooming "Strength" slider had no effect when combing.
+	- Under certain lighting conditions the shadows could "sparkle".
+
+
+
+
+V1.2.1 - 2022.08.01
+-------------------
+Bug fixes:
+	- Fixed the Fur Grooming middle-mouse-button texture sampling.
+
+
+
+
+V1.2.0 - 2022.07.30
+-------------------
+New Features:
+	- Simulated wind.
+	- Supports world fog.
+
+Bug fixes:
+	- Fur Grooming no longer crashes if VRChat SDK is not installed.
+
+Changes:
+	- Several more significant speed optimizations.
+	- Increased render detail around edges.
+
+
+
+
+V1.1.0 - 2022.06.11
+-------------------
+New Features:
+	- Supports light emission textures.
+
+Bug fixes:
+	- Fur Grooming now works correctly on surfaces which reuse textures in multiple places.
+	- Brush falloff is now consistent at different brush strengths.
+
+Changes:
+	- The combing brush is now much smoother and allows for finer adjustments.
+
+
+
+
+V1.0.2 - 2022.06.08
+-------------------
+Bug fixes:
+	- Fur Grooming now works with blendshapes and posed bones.
+
+Changes:
+	- Fur Grooming doesn't centre the avatar anymore (not needed anymore, after bug fix).
+
+
+
+
+V1.0.1 - 2022.06.07
+-------------------
+Bug fixes:
+	- Fur Grooming wasn't working unless the material being groomed was the first submesh of the mesh.
+	- Fur Grooming wasn't working with non-centred avatars. The current workaround is that the avatar is now automatically centred.
+	- Fur Grooming camera was clipping when up close.
+	- The hair was clipping if there was no "Fur Markings" map.
+	- "FastFur-DensityCheck.shader" wasn't compiling (but no features need it yet).
+
+Changes:
+	- Fur Grooming now automatically centres the avatar.
+	- Fur Grooming now repositions the camera to face the avatar when starting up.
+
+
+
+
+V1.0.0 - 2022.06.05
+-------------------
+	- Initial release
+
+

@@ -1,0 +1,15 @@
+Warren's Fast Fur Shader
+
+This shader is licensed for personal use only. If you wish to use the shader for a commercial purpose that is not specifically described below, please contact me.
+
+You may not re-sell or re-package the shader.
+
+If you wish to use any version of the shader for personal content creation (ex. Twitch, YouTube, TikTok, etc...), you are free to do so.
+
+If you wish to include the FREE LITE VERSION of the shader in a public VR Chat avatar, you are free to do so. Somehow giving credit is appreciated and encouraged, but not absolutely required.
+
+If you wish to include the FREE LITE VERSION of the shader in a Unity asset you are selling (or giving away), you must state that you are using "Warren's Fast Fur Shader" and provide a link to the shader's Gumroad page. (Note: I'd prefer if you didn't include the shader, so that way people go to Gumroad and get the newest version, but I'll leave that up to you to decide.)
+
+You may NOT include the standard (ie. paid) version, or any "Super Pipeline" variant, in something you are selling or giving away. If you want to ask for an exception, contact me.
+
+If you wish to sell, or give away, pre-groomed fur data texture files or Unity material configurations for an avatar, you are encouraged to do so! Oh, but also contact me, I would love to see what you do with it!
