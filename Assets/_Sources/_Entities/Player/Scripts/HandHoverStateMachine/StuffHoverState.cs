@@ -15,8 +15,8 @@ public class StuffHoverState : HandHoverState
     {
         base.Enter();
         _handPoser.CurrentIdlePoseState = _handPoser.GrabHoverHandPoseState;
-        _handPoser.CurrentGripPoseState = _handPoser.PinchHandPoseState;
-        _handPoser.CurrentTriggerPoseState = _handPoser.GrabHoverHandPoseState;
+        _handPoser.CurrentGripPoseState = _handPoser.ScissorsHandPoseState;
+        _handPoser.CurrentTriggerPoseState = _handPoser.ScissorsCutHandPoseState;
         _handPoser.HandHoverState = HandHoverStateEnum.StuffHover;
         _handPoser.NearestStuff = _handPoser.NearestInteractableObject;
         _stuff = _handPoser.NearestInteractableObject.GetComponent<Stuff>();

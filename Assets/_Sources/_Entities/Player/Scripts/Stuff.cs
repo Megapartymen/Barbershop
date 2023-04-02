@@ -13,10 +13,11 @@ public class Stuff : MonoBehaviour
     private bool _isInSocket;
     private XRGrabInteractable _xrGrabInteractable;
     private HandPoser _handPoser;
-    private InteractionLogic _interactionLogic;
     private Transform _handAttach;
     private float _lerpDelay = 0.5f;
     private Rigidbody _rigidbody;
+    
+    public InteractionLogic InteractionLogic;
 
     public Action<HandPoser> OnSelectEnter;
     public Action OnSelectExit;
@@ -63,13 +64,23 @@ public class Stuff : MonoBehaviour
         _handAttach = null;
         _rigidbody.useGravity = true;
         _rigidbody.isKinematic = false;
+        InteractionLogic.HoverDot.IsHide = false;
+        InteractionLogic.HoverDot.SetDotActive();
     }
 
     private void SetStateInHand(HandPoser handPoser)
     {
+        if (_handPoser != null)
+        {
+            _handPoser.ClearObjectInHand();
+            SetStateFree();
+        }
+        
         _handPoser = handPoser;
         _handAttach = _handPoser.AttachForGrab;
         _rigidbody.useGravity = false;
         _rigidbody.isKinematic = true;
+        InteractionLogic.HoverDot.DisableDot();
+        InteractionLogic.HoverDot.IsHide = true;
     }
 }

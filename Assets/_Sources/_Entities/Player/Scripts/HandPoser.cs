@@ -17,7 +17,9 @@ public enum HandPoseStateEnum
     TwoFingersHandPose,
     TwoFingersPressHandPose,
     PinchHandPose,
-    PinchHoverHandPose
+    PinchHoverHandPose,
+    ScissorsHandPose,
+    ScissorsCutHandPose
 }
 
 public enum HandHoverStateEnum
@@ -52,6 +54,8 @@ public class HandPoser : MonoBehaviour
     public TwoFingersPressHandPoseState TwoFingersPressHandPoseState;
     public PinchHandPoseState PinchHandPoseState;
     public GrabHoverHandPoseState GrabHoverHandPoseState;
+    public ScissorsHandPoseState ScissorsHandPoseState;
+    public ScissorsCutHandPoseState ScissorsCutHandPoseState;
     
     //HandHoverStateMachine
     private HandHoverStateMachine _handHoverStateMachine;
@@ -99,6 +103,8 @@ public class HandPoser : MonoBehaviour
         TwoFingersPressHandPoseState = new TwoFingersPressHandPoseState(this, _animator);
         PinchHandPoseState = new PinchHandPoseState(this, _animator);
         GrabHoverHandPoseState = new GrabHoverHandPoseState(this, _animator);
+        ScissorsHandPoseState = new ScissorsHandPoseState(this, _animator);
+        ScissorsCutHandPoseState = new ScissorsCutHandPoseState(this, _animator);
         
         //HandHoverStateMachine initialization
         _handHoverStateMachine = new HandHoverStateMachine();
@@ -233,6 +239,7 @@ public class HandPoser : MonoBehaviour
         }
         
         _isDetectorActive = true;
+        _isGripPressed = false;
     }
     
     private void SetGripPose()
@@ -243,14 +250,26 @@ public class HandPoser : MonoBehaviour
         {
             SetObjectInHand();
         }
-        
+
+        _isGripPressed = true;
         _isDetectorActive = false;
     }
     
     private void SetTriggerPose()
     {
+        if (!_isGripPressed)
+            return;
+        
         _handPoseStateMachine.ChangeState(CurrentTriggerPoseState);
         _isDetectorActive = false;
+    }
+
+    private void LeaveTriggerPose()
+    {
+        if (_isGripPressed)
+        {
+            _handPoseStateMachine.ChangeState(CurrentGripPoseState);
+        }
     }
 
     private void SetObjectInHand()
@@ -260,16 +279,17 @@ public class HandPoser : MonoBehaviour
         if (ObjectInHand != null)
         {
             var stuff = ObjectInHand.GetComponent<Stuff>();
+            
             stuff.OnSelectEnter?.Invoke(this);
         }
     }
 
-    private void ClearObjectInHand()
+    public void ClearObjectInHand()
     {
         if (ObjectInHand != null)
         {
             var stuff = ObjectInHand.GetComponent<Stuff>();
-        
+            
             stuff.OnSelectExit?.Invoke();
             ObjectInHand = null;
         }
@@ -296,14 +316,14 @@ public class HandPoser : MonoBehaviour
             _vrInputSystem.OnLeftGripPressed += SetGripPose;
             _vrInputSystem.OnLeftTriggerPressed += SetTriggerPose;
             _vrInputSystem.OnLeftGripUnpressed += SetIdlePose;
-            _vrInputSystem.OnLeftTriggerUnpressed += SetIdlePose;
+            _vrInputSystem.OnLeftTriggerUnpressed += LeaveTriggerPose;
         }
         else if (Controller == _vrInputSystem.RightController)
         {
             _vrInputSystem.OnRightGripPressed += SetGripPose;
             _vrInputSystem.OnRightTriggerPressed += SetTriggerPose;
             _vrInputSystem.OnRightGripUnpressed += SetIdlePose;
-            _vrInputSystem.OnRightTriggerUnpressed += SetIdlePose;
+            _vrInputSystem.OnRightTriggerUnpressed += LeaveTriggerPose;
         }
         
         // _xrBaseInteractor.onSelectEntered.AddListener(SetObjectInHand);
@@ -317,14 +337,14 @@ public class HandPoser : MonoBehaviour
             _vrInputSystem.OnLeftGripPressed -= SetGripPose;
             _vrInputSystem.OnLeftTriggerPressed -= SetTriggerPose;
             _vrInputSystem.OnLeftGripUnpressed -= SetIdlePose;
-            _vrInputSystem.OnLeftTriggerUnpressed -= SetIdlePose;
+            _vrInputSystem.OnLeftTriggerUnpressed -= LeaveTriggerPose;
         }
         else if (Controller == _vrInputSystem.RightController)
         {
             _vrInputSystem.OnRightGripPressed -= SetGripPose;
             _vrInputSystem.OnRightTriggerPressed -= SetTriggerPose;
             _vrInputSystem.OnRightGripUnpressed -= SetIdlePose;
-            _vrInputSystem.OnRightTriggerUnpressed -= SetIdlePose;
+            _vrInputSystem.OnRightTriggerUnpressed -= LeaveTriggerPose;
         }
         
         // _xrBaseInteractor.onSelectEntered.RemoveListener(SetObjectInHand);

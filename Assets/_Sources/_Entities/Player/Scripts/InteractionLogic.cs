@@ -6,13 +6,14 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-[RequireComponent(typeof(Outline))]
+// [RequireComponent(typeof(Outline))]
 public class InteractionLogic : MonoBehaviour
 {
     private HapticSystem _hapticSystem;
-    private Outline _outline;
+    // private Outline _outline;
     
     [SerializeField] private LayerMask _handLayer;
+    public HoverDot HoverDot;
     
     // public UIScaler UIScaler;
     public HandHoverStateEnum HoverType;
@@ -26,7 +27,7 @@ public class InteractionLogic : MonoBehaviour
     private void Awake()
     {
         _hapticSystem = FindObjectOfType<HapticSystem>();
-        _outline = GetComponent<Outline>();
+        // _outline = GetComponent<Outline>();
     }
 
     private void OnEnable()
@@ -44,9 +45,9 @@ public class InteractionLogic : MonoBehaviour
     private void Start()
     {
         SetHoverType();
-        _outline.enabled = false;
-        _outline.OutlineColor = Color.white;
-        _outline.OutlineMode = Outline.Mode.OutlineVisible;
+        // _outline.enabled = false;
+        // _outline.OutlineColor = Color.white;
+        // _outline.OutlineMode = Outline.Mode.OutlineVisible;
     }
     
     private void SetHoverType()
@@ -57,14 +58,14 @@ public class InteractionLogic : MonoBehaviour
         }
     }
     
-    private void EnableHoverState(ActionBasedController controller)
+    public void EnableHoverState(ActionBasedController controller)
     {
-        _outline.enabled = true;
+        HoverDot.SetCircleActive();
         _hapticSystem.PlayTouch(controller);
     }
 
-    private void DisableHoverState()
+    public void DisableHoverState()
     {
-        _outline.enabled = false;
+        HoverDot.SetDotActive();
     }
 }

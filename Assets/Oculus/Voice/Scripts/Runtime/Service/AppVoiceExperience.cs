@@ -29,7 +29,7 @@ using Oculus.Voice.Bindings.Android;
 using Oculus.Voice.Core.Bindings.Android.PlatformLogger;
 using Oculus.Voice.Core.Bindings.Interfaces;
 using Oculus.Voice.Interfaces;
-using Oculus.VoiceSDK.Utilities;
+using Oculus.VoiceSDK.Dictation.Utilities;
 using UnityEngine;
 
 namespace Oculus.Voice

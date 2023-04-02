@@ -17,6 +17,8 @@ public abstract class HandPoseState
     protected readonly int _pinchPoseHash = Animator.StringToHash("PinchPose");
     protected readonly int _pinchHoverPoseHash = Animator.StringToHash("PinchHoverPose");
     protected readonly int _readyToGrab = Animator.StringToHash("ReadyToGrab");
+    protected readonly int _scissorsPoseHash = Animator.StringToHash("ScissorsGrab");
+    protected readonly int _scissorsCutPoseHash = Animator.StringToHash("ScissorsCut");
 
     public virtual void Enter()
     {
