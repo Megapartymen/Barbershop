@@ -9,6 +9,6 @@ public class FaderController : MonoBehaviour
 
     private void Start()
     {
-        _fader.FadeOut();
+        _fader.FadeOut(3);
     }
 }

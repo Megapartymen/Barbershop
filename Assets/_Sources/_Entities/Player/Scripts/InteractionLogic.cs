@@ -60,12 +60,15 @@ public class InteractionLogic : MonoBehaviour
     
     public void EnableHoverState(ActionBasedController controller)
     {
-        HoverDot.SetCircleActive();
+        if (HoverDot != null)
+            HoverDot.SetCircleActive();
+        
         _hapticSystem.PlayTouch(controller);
     }
 
     public void DisableHoverState()
     {
-        HoverDot.SetDotActive();
+        if (HoverDot != null)
+            HoverDot.SetDotActive();
     }
 }
